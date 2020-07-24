@@ -95,7 +95,7 @@ static inline const struct pwm_stm32_config *to_config(struct device *dev)
 static uint32_t get_polarity(pwm_flags_t flags)
 {
 	if ((flags & PWM_POLARITY_MASK) == PWM_POLARITY_NORMAL) {
-		return LL_TIM_OCPOLARITY_HIGH;
+			return LL_TIM_OCPOLARITY_HIGH;
 	}
 
 	return LL_TIM_OCPOLARITY_LOW;
@@ -201,6 +201,16 @@ static int pwm_stm32_pin_set(struct device *dev, uint32_t pwm,
 		return -EINVAL;
 	}
 
+//STM32L0 timers dont have  LOCHE Jeremy
+#if defined(CONFIG_SOC_SERIES_STM32L0X)
+	/*
+	 * STM32L0x dont have 32 bits timers only 16 bits
+	 */
+	if(period_cycles > UINT16_MAX + 1)
+	{
+		return -ENOTSUP;
+	}
+#else
 	/*
 	 * Non 32-bit timers count from 0 up to the value in the ARR register
 	 * (16-bit). Thus period_cycles cannot be greater than UINT16_MAX + 1.
@@ -209,6 +219,7 @@ static int pwm_stm32_pin_set(struct device *dev, uint32_t pwm,
 	    (period_cycles > UINT16_MAX + 1)) {
 		return -ENOTSUP;
 	}
+#endif
 
 	channel = ch2ll[pwm - 1u];
 
@@ -226,8 +237,10 @@ static int pwm_stm32_pin_set(struct device *dev, uint32_t pwm,
 		oc_init.OCState = LL_TIM_OCSTATE_ENABLE;
 		oc_init.CompareValue = pulse_cycles;
 		oc_init.OCPolarity = get_polarity(flags);
+//STM32L0 timers dont have OCIdleState LOCHE Jeremy
+#if !defined(CONFIG_SOC_SERIES_STM32L0X)
 		oc_init.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
-
+#endif
 		if (LL_TIM_OC_Init(cfg->timer, channel, &oc_init) != SUCCESS) {
 			LOG_ERR("Could not initialize timer channel output");
 			return -EIO;
@@ -292,16 +305,22 @@ static int pwm_stm32_init(struct device *dev)
 	init.CounterMode = LL_TIM_COUNTERMODE_UP;
 	init.Autoreload = 0u;
 	init.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+//STM32L0 timers dont have RepetitionCounter LOCHE Jeremy
+#if !defined(CONFIG_SOC_SERIES_STM32L0X)
 	init.RepetitionCounter = 0u;
+#endif
 	if (LL_TIM_Init(cfg->timer, &init) != SUCCESS) {
 		LOG_ERR("Could not initialize timer");
 		return -EIO;
 	}
 
+//SMT32L0 timers are not Break instance LOCHE Jeremy
+#if !defined(CONFIG_SOC_SERIES_STM32L0X)
 	/* enable outputs and counter */
 	if (IS_TIM_BREAK_INSTANCE(cfg->timer)) {
 		LL_TIM_EnableAllOutputs(cfg->timer);
 	}
+#endif
 
 	LL_TIM_EnableCounter(cfg->timer);
 
