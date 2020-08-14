@@ -30,9 +30,53 @@ config WS2812_STRIP_GPIO
 	bool "Enable the GPIO driver"
 	# Only an Cortex-M0 inline assembly implementation for the nRF51
 	# is supported currently.
-	depends on SOC_SERIES_NRF51X
+	depends on SOC_SERIES_NRF51X || SOC_FAMILY_STM32
 	help
 	  The GPIO driver does bit-banging with inline assembly,
 	  and is not available on all SoCs.
 
 endchoice
+
+config WS2812_STRIP_GPIO_CYCLES_T1H
+	int "Number of CPU cycles corresponding to T1H timing"
+	default 12
+	depends on WS2812_STRIP_GPIO
+	help
+	  This value is used to generate NOP instruction to create delay
+	  Compute this timing with your CPU frequency
+	  T1H: nanoseconds for T1H timing
+	  F_CPU: cpu frequency in Hz
+	  Cycles = T1H * F_CPU / 1000000000
+	  If your CPU has flash wait states, consider tweaking this value down
+
+config WS2812_STRIP_GPIO_CYCLES_T1L
+	int "Number of CPU cycles corresponding to T1L timing"
+	default 8
+	depends on WS2812_STRIP_GPIO
+	help
+	  This value is used to generate NOP instruction to create delay
+	  Compute this timing with your CPU frequency
+	  T1L: nanoseconds for T1L timing
+	  F_CPU: cpu frequency in Hz
+	  Cycles = T1L * F_CPU / 1000000000
+	  If your CPU has flash wait states, consider tweaking this value down
+
+config WS2812_STRIP_GPIO_CYCLES_T0H
+	int "Number of CPU cycles corresponding to T0H timing"
+	default 4
+	depends on WS2812_STRIP_GPIO
+	help
+	  Compute this timing with your CPU frequency
+	  T0H: nanoseconds for T0H timing
+	  F_CPU: cpu frequency in Hz
+	  Cycles = T0H * F_CPU / 1000000000
+
+config WS2812_STRIP_GPIO_CYCLES_T0L
+	int "Number of CPU cycles corresponding to T0L timing"
+	default 8
+	depends on WS2812_STRIP_GPIO
+	help
+	  Compute this timing with your CPU frequency
+	  T0L: nanoseconds for T0L timing
+	  F_CPU: cpu frequency in Hz
+	  Cycles = T0L * F_CPU / 1000000000
