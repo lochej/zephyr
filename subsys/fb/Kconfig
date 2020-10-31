@@ -27,6 +27,7 @@ config CHARACTER_FRAMEBUFFER_SHELL_DRIVER_NAME
 	string
 	default "SSD16XX" if SSD16XX
 	default "SSD1306" if SSD1306
+	default "ST7565" if ST7565
 	depends on CHARACTER_FRAMEBUFFER_SHELL
 	help
 	  Character Framebuffer Display Driver Name
