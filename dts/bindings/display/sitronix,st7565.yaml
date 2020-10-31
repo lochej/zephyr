@@ -1,0 +1,81 @@
+# Copyright (c) 2020 LOCHE Jeremy <lochejeremy@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+description: ST7565 / ST7567 128x64 LCD display controller
+
+compatible: "sitronix,st7565fb"
+
+include: spi-device.yaml
+
+properties:
+    height:
+      type: int
+      required: true
+      description: Height in pixel of the panel driven by the controller
+
+    width:
+      type: int
+      required: true
+      description: Width in pixel of the panel driven by the controller
+
+    reset-gpios:
+      type: phandle-array
+      required: true
+      description: RESET pin.
+
+        The RESET pin of ST7565 is active low.
+        If connected directly the MCU pin should be configured
+        as active low.
+
+    rs-gpios:
+      type: phandle-array
+      required: true
+      description: RS/A0 pin.
+
+        The RS/A0 pin of ST7565 selects command or data register.
+        Use LOW for control data and HIGH for display data.
+
+    bias:
+      type: int
+      required: false
+      default: 0
+      description: Bias setting of the controller.
+
+        Use 0 for 1/9 bias and 1 for 1/7 bias.
+        Select 1/9
+          bias = <0>;
+        Select 1/7
+          bias = <1>;
+
+    regulator-ratio:
+      type: int
+      required: false
+      default: 6
+      description: Regulator ratio setting of the controller.
+
+        Value indicates value in the following list
+        RR  Ratio
+        0 = 3.0
+        1 = 3.5
+        2 = 4.0
+        3 = 4.5
+        4 = 5.0
+        5 = 5.5
+        6 = 6.0
+        7 = 6.5
+
+        i.e. for rr=2 4.0 ratio use
+          regulator-ratio = <2>;
+
+    ev-contrast-range:
+      type: uint8-array
+      required: false
+      default: [0x10, 0x28]
+      description: Electronic volume contrast adjustment range.
+
+        Provide a range of contrast values from lowest to highest.
+        Values are [minimum, maximum] for the ST7565 EV register
+        which give lowest and highest desirable contrast.
+        Contrast will be auto-adjusted to the middle value of this range.
+        To fix contrast value, use the same for both min and max.
+          ev-contrast-range = [3F 3F];

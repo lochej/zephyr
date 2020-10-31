@@ -1,0 +1,10 @@
+# ST7565 display controller configuration options
+
+# Copyright (c) 2020 LOCHE Jeremy <lochejeremy@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+config ST7565
+	bool "ST7565 compatible display controller driver"
+	depends on SPI
+	help
+	  Enable driver for ST7565 compatible controller.
